@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authorization-api
+
+spec:
+  replicas: 1
+
+  template:
+    spec:
+      containers:
+        - name: authorization-api
+          image: apetitoebusinesssolutions.azurecr.io/meinapetito-authorization-api:<Tag>
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+
+            - name: ConnectionStrings__NServiceBusTransportConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: nservicebus-transport-connectionstring
+                  key: NServiceBusTransportConnectionString
+          
+          

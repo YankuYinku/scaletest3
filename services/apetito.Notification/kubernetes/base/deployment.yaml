@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-api
+spec:
+  selector:
+    matchLabels:
+      app: notification-api
+
+  replicas: 3
+
+  template:
+    metadata:
+      labels:
+        app: notification-api
+
+    spec:
+      containers:
+      - name: notification-api
+        image: apetitoebusinesssolutions.azurecr.io/notification-api:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+
+        ports:
+        - containerPort: 80
+
+        env:
+          - name: APETITO_APPLICATION
+            value: meinapetito
+          - name: APETITO_DEPLOYMENT_TARGET
+            value: Kubernetes
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+          - name: AZURE_TENANT_ID
+            value: 74921e6f-35b2-40fb-803d-53715777c223
+          - name: AZURE_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: appsetting-sserviceprincipal
+                key: AZURE_CLIENT_ID
+          - name: AZURE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: appsetting-sserviceprincipal
+                key: AZURE_CLIENT_SECRET
+          - name: AZURE_APP_SETTINGS_URI
+            valueFrom:
+              secretKeyRef:
+                name: appsetting-sserviceprincipal
+                key: AZURE_APP_SETTINGS_URI
+          - name: ConnectionStrings__NServiceBusTransportConnectionString
+            valueFrom:
+              secretKeyRef:
+                name: nservicebus-transport-connectionstring
+                key: NServiceBusTransportConnectionString

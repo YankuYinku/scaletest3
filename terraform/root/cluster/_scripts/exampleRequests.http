@@ -1,0 +1,87 @@
+# You need exampleRequests.env with a variable named portalManagementClientSecret holding the client secret of the protalmanagement application
+# Get token
+# @name token
+POST https://login.microsoftonline.com/1b0b1704-442b-4c80-8703-d39bd786818d/oauth2/v2.0/token HTTP/1.1
+Host: login.microsoftonline.com
+Content-Type: application/x-www-form-urlencoded
+
+client_id=e331395d-9609-46fe-87b4-41206d51fc3d
+&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default
+&client_secret={{portalManagementClientSecret}}
+&grant_type=client_credentials
+
+# portal-api
+GET https://graph.microsoft.com/v1.0/applications/17b8dc63-1ef2-4870-b4f5-d98dff4ba42e
+Authorization: Bearer {{token.access_token}}
+
+# GET users with login activity
+GET https://graph.microsoft.com/v1.0/users
+Authorization: Bearer {{token.access_token}}
+
+# Update portal-api
+PATCH https://graph.microsoft.com/v1.0/applications/17b8dc63-1ef2-4870-b4f5-d98dff4ba42e
+Content-Type: application/json
+Authorization: Bearer {{token.access_token}}
+
+{
+    "web": {
+       "redirectUris": [
+            "https://localhost/swagger/oauth2-redirect.html",
+            "http://localhost/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature35963.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature35485.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "http://localhost:5000/swagger/oauth2-redirect.html",
+            "https://localhost:5001/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature36418.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature33382.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature33521.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature36142.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature35423.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature36433.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature33523.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature36652.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html",
+            "https://meinapetito-feature354232.westeurope.cloudapp.azure.com/api/swagger/oauth2-redirect.html"
+       ]
+    }
+}
+
+# portal-root
+GET https://graph.microsoft.com/v1.0/applications/b465db84-cce0-4575-8b4b-4b9dde58f1d8
+Authorization: Bearer {{token.access_token}}
+
+PATCH https://graph.microsoft.com/v1.0/applications/17b8dc63-1ef2-4870-b4f5-d98dff4ba42e
+Content-Type: application/json
+Authorization: Bearer {{token.access_token}}
+
+{
+    "spa": {
+        "redirectUris": [
+            "https://meinapetito-feature99999.westeurope.cloudapp.azure.com/signin",
+            "https://meinapetito-feature99999.westeurope.cloudapp.azure.com",
+            "https://meinapetito-feature354232.westeurope.cloudapp.azure.com",
+            "https://meinapetito-feature354232.westeurope.cloudapp.azure.com/signin",
+            "https://meinapetito-feature36652.westeurope.cloudapp.azure.com/signin",
+            "https://meinapetito-feature36652.westeurope.cloudapp.azure.com",
+            "https://meinapetito-feature33523.westeurope.cloudapp.azure.com",
+            "https://meinapetito-feature33523.westeurope.cloudapp.azure.com/signin",
+            "https://meinapetito-feature35423.westeurope.cloudapp.azure.com",
+            "https://meinapetito-feature35423.westeurope.cloudapp.azure.com/signin",
+            "https://meinapetito-feature33382.westeurope.cloudapp.azure.com",
+            "https://meinapetito-feature33382.westeurope.cloudapp.azure.com/signin",
+            "http://localhost:8080/signin",
+            "http://localhost:8080",
+            "https://localhost:5001/signin",
+            "https://localhost:5001",
+            "http://localhost:5000/signin",
+            "http://localhost:5000",
+            "http://localhost/signin",
+            "https://meinapetito-development.westeurope.cloudapp.azure.com",
+            "http://localhost:6006/signin",
+            "http://localhost:6006",
+            "http://localhost:9000/signin",
+            "http://localhost:9000",
+            "http://localhost",
+            "https://meinapetito-development.westeurope.cloudapp.azure.com/signin"
+        ]
+    }
+}

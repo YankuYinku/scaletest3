@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lab-remotedebug-dev-1
+  labels:
+    name: lab-remotedebug-dev-1
+
+spec:
+  containers:
+  - name: lab-remotedebug
+    image: apetitoebusinesssolutions.azurecr.io/lab-aksremotedebugging:development
+    # image: apetitoebusinesssolutions.azurecr.io/lab-aksremotedebugging:latest
+    # image: apsc10testacr.azurecr.io/menuserviceshops-xp0-mssql:1
+    imagePullPolicy: Always
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    ports:
+      - containerPort: 80

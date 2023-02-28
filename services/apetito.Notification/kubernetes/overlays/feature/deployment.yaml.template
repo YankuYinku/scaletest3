@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-api
+
+spec:
+  replicas: 1
+
+  template:
+    spec:
+      containers:
+        - name: notification-api
+          image: apetitoebusinesssolutions.azurecr.io/notification-api:<Tag>
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            
+            - name: ConnectionStrings__NServiceBusTransportConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: nservicebus-transport-connectionstring
+                  key: NServiceBusTransportConnectionString
+             
+          
+          

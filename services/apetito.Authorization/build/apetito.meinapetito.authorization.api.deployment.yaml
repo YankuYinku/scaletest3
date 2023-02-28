@@ -1,0 +1,111 @@
+trigger: none
+
+resources:
+  webhooks:
+    - webhook: apetitoauthorization          
+      connection: meinapetito-authorizationapi-pushed-toacr
+
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  - group: apetito.meinapetito
+  
+  - name: containerRegistry
+    value: "apetitoebusinesssolutions"
+  - name: containerRegistryUrl
+    value: "$(containerRegistry).azurecr.io"
+  - name: imageRepository
+    value: "meinapetito-authorization-api"
+  - name: sourcesDirectory
+    value: "$(Build.SourcesDirectory)/services/apetito.Authorization"
+  - name: dockerfilePath
+    value: "$(sourcesDirectory)/apetito.Authorization.Api/Dockerfile"
+  - name: dockerBuildContext
+    value: "$(sourcesDirectory)"
+  - name: isMainBuild
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "true"
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "false"
+  - name: tag
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: $(Build.BuildId)
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "development"
+  - name: tags
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: |
+        $(Build.BuildId)
+        latest
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "development"
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndPublishDockerImage
+        steps:
+          - task: PublishPipelineArtifact@1
+            displayName: Publish the raw kubernetes manifests to the pipeline
+            inputs:
+              targetPath: "$(sourcesDirectory)/kubernetes"
+              artifact: "Manifests"
+              publishLocation: "pipeline"
+
+  - stage: Staging
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    displayName: Deploy the portal api to the staging cluster
+    jobs:
+      - deployment: DeployToStaging
+        environment: stage-meinapetito.default
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: KubernetesManifest@0
+                  name: bake
+                  inputs:
+                    action: "bake"
+                    renderType: "kustomize"
+                    kustomizationPath: "$(Pipeline.Workspace)/Manifests/overlays/staging/"
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy to Kubernetes Cluster
+                  inputs:
+                    action: "deploy"
+
+                    manifests: |
+                      $(bake.manifestsBundle)
+
+                    containers: |
+                      $(containerRegistryUrl)/$(imageRepository):$(parameters.apetitoauthorization.target.tag)
+
+  - stage: Production
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    displayName: Deploy the portal api to the production cluster
+    jobs:
+      - deployment: DeployToProduction
+        environment: prod-meinapetito.default
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: KubernetesManifest@0
+                  name: bake
+                  inputs:
+                    action: "bake"
+                    renderType: "kustomize"
+                    kustomizationPath: "$(Pipeline.Workspace)/Manifests/overlays/prod/"
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy to Kubernetes Cluster
+                  inputs:
+                    action: "deploy"
+
+                    manifests: |
+                      $(bake.manifestsBundle)
+
+                    containers: |
+                      $(containerRegistryUrl)/$(imageRepository):$(parameters.apetitoauthorization.target.tag)
