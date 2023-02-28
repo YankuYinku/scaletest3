@@ -1,0 +1,13 @@
+param (
+    [Parameter(Position = 0)]
+    [string] $PAT 
+)
+
+$prevPwd = $PWD; Set-Location -ErrorAction Stop -LiteralPath $PSScriptRoot
+
+az functionapp config container set -g production_product_meinapetito --slot development --name webhooks-adb2c --docker-custom-image-name apetitoebusinesssolutions.azurecr.io/meinapetito-webhooks-azureadb2c-api:<Tag>
+az functionapp restart -g production_product_meinapetito --slot development --name webhooks-adb2c
+
+$prevPwd | Set-Location
+
+

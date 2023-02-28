@@ -1,0 +1,13 @@
+param (
+    [Parameter(Position = 0)]
+    [string] $PAT 
+)
+
+$prevPwd = $PWD; Set-Location -ErrorAction Stop -LiteralPath $PSScriptRoot
+
+az functionapp config container set -g production_product_meinapetito --slot prismicdev --name webhooks-prismic --docker-custom-image-name apetitoebusinesssolutions.azurecr.io/meinapetito-webhooks-prismic:<Tag>
+az functionapp restart -g production_product_meinapetito --slot prismicdev --name webhooks-prismic
+
+$prevPwd | Set-Location
+
+

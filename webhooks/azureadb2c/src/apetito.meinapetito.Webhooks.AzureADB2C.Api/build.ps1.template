@@ -1,0 +1,14 @@
+param (
+    [Parameter(Position = 0)]
+    [string] $PAT 
+)
+
+
+$prevPwd = $PWD; Set-Location -ErrorAction Stop -LiteralPath $PSScriptRoot
+
+docker build ./.. -t apetitoebusinesssolutions.azurecr.io/meinapetito-webhooks-azureadb2c-api -f Dockerfile --build-arg PAT=$PAT
+
+docker tag apetitoebusinesssolutions.azurecr.io/meinapetito-webhooks-azureadb2c-api apetitoebusinesssolutions.azurecr.io/meinapetito-webhooks-azureadb2c-api:<Tag>
+docker push apetitoebusinesssolutions.azurecr.io/meinapetito-webhooks-azureadb2c-api:<Tag>
+
+$prevPwd | Set-Location

@@ -1,0 +1,131 @@
+resources:
+  repositories:
+    - repository: self
+      trigger:
+        batch: "true"
+        branches:
+          include:
+            - main
+            - feature/*
+        paths:
+          include:
+            - webhooks/azureadb2c
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  - group: apetito.meinapetito
+  
+  - name: containerRegistry
+    value: "apetitoebusinesssolutions"
+  - name: containerRegistryUrl
+    value: "$(containerRegistry).azurecr.io"
+  - name: imageRepository
+    value: "meinapetito-webhooks-azureadb2c"
+  - name: sourcesDirectory
+    value: "$(Build.SourcesDirectory)/webhooks/azureadb2c"
+  - name: dockerfilePath
+    value: "$(sourcesDirectory)/src/apetito.meinapetito.Webhooks.AzureADB2C.Api/Dockerfile"
+  - name: dockerBuildContext
+    value: "$(sourcesDirectory)/src"
+  - name: isMainBuild
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "true"
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "false"
+  - name: tag
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: $(Build.BuildId)
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "development"
+  - name: tags
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: |
+        $(Build.BuildId)
+        latest
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "development"
+
+stages:
+
+  - stage: Build
+    displayName: Build and push the docker image
+    condition: eq(variables['build.sourceBranch'], 'refs/heads/main')
+    jobs:
+      - job: BuildAndPublishDockerImage
+        displayName: Build and push docker image
+        condition: ne(variables['Build.Reason'], 'PullRequest')
+        steps:
+          - task: Docker@2
+            displayName: Build meinapetito-webhooks-azureadb2c-api docker image
+            inputs:
+              command: "build"
+              containerRegistry: "$(containerRegistry)"
+              repository: "$(imageRepository)"
+              dockerfile: "$(dockerfilePath)"
+              buildContext: "$(dockerBuildContext)"
+              tags: "$(tags)"
+              arguments: "--build-arg PAT=$(PAT)"
+              addPipelineData: false
+
+          - task: Docker@2
+            displayName: Push meinapetito-webhooks-azureadb2c-api docker image to apetitoeBusinessSolutions ACR
+            inputs:
+              command: "push"
+              containerRegistry: "$(containerRegistry)"
+              repository: "$(imageRepository)"
+              tags: "$(tags)"
+
+
+      - job: Build_Docker_Image_For_Pull_Request
+        displayName: Build Docker Image For Pull Request
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        steps:
+          - task: Docker@2
+            displayName: Build meinapetito-webhooks-azureadb2c-api docker image
+            inputs:
+              command: "build"
+              containerRegistry: "$(containerRegistry)"
+              repository: "$(imageRepository)"
+              dockerfile: "$(dockerfilePath)"
+              buildContext: "$(dockerBuildContext)"
+              tags: "$(tags)"
+              arguments: "--build-arg PAT=$(PAT)"
+              addPipelineData: false
+  
+  - stage: Staging
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    displayName: Deploy the cache-articles api to the staging cluster
+    jobs:
+      - job: DeployToStaging
+        steps:
+          - task: AzureFunctionAppContainer@1
+            inputs:
+              azureSubscription: 'apetito-azure-eBusinessSolutions-produktiv (7adba660-4373-42b4-864d-b201cd22dae6)'
+              appName: 'meinapetito-webhook-adb2c'
+              deployToSlotOrASE: true
+              resourceGroupName: 'prod_meinapetito'
+              slotName: 'stage-adb2c'
+              imageName: '$(containerRegistryUrl)/$(imageRepository):$(tag)'
+
+  - stage: Production
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    displayName: Deploy the cache-articles api to the production cluster
+    dependsOn: Staging
+    jobs:
+      - deployment: deploy
+        environment: "meinapetito-webhooks-azureadb2c-prod"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureFunctionAppContainer@1
+                  displayName: 'Azure Function on Container Deploy'
+                  inputs:
+                    azureSubscription: 'apetito-azure-eBusinessSolutions-produktiv (7adba660-4373-42b4-864d-b201cd22dae6)'
+                    appName: 'meinapetito-webhook-adb2c'
+                    deployToSlotOrASE: true
+                    resourceGroupName: 'prod_meinapetito'
+                    slotName: 'production'
+                    imageName: '$(containerRegistryUrl)/$(imageRepository):$(tag)'

@@ -1,0 +1,13 @@
+param (
+    [Parameter(Position = 0)]
+    [string] $PAT 
+)
+
+$prevPwd = $PWD; Set-Location -ErrorAction Stop -LiteralPath $PSScriptRoot
+
+az functionapp config container set -g production_product_meinapetito --slot dev-slot --name adapters-recipe-changed --docker-custom-image-name apetitoebusinesssolutions.azurecr.io/meinapetito-adapters-recipe-changed:<Tag>
+az functionapp restart -g production_product_meinapetito --slot dev-slot --name adapters-recipe-changed
+
+$prevPwd | Set-Location
+
+

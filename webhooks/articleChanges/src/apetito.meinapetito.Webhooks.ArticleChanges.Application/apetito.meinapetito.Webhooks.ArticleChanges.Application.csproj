@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="apetito.ArticleGateway.Contracts" Version="4.4.0-20220502.2" />
+        <PackageReference Include="apetito.iProDa3.Contracts" Version="1.2.1-20220513.1" />
+    </ItemGroup>
+
+</Project>
