@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-sdk-common
+
+spec:
+  replicas: 1
+
+  template:
+    spec:
+      containers:
+        - name: portal-sdk-common
+          image: apetitoebusinesssolutions.azurecr.io/meinapetito-portal-sdk-common:latest
+          env:
+            - name: PORTAL_SDK_COMMON_ENVIRONMENT
+              value: Staging
+            - name: PORTAL_SDK_COMMON_MEINAPETITO_PORTAL_BASE_URL
+              value: https://stage-meinapetito.apebs.de/api
+            - name: PORTAL_SDK_COMMON_APP_INSIGHTS_CONNECTIONSTRING
+              value: InstrumentationKey=b270a01d-3d53-4348-b9da-14d98ddd29db;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/

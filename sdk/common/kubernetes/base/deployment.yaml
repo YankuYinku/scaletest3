@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-sdk-common
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: portal-sdk-common
+  template:
+    metadata:
+      labels:
+        app: portal-sdk-common
+
+    spec:
+      containers:
+        - name: portal-sdk-common
+          image: apetitoebusinesssolutions.azurecr.io/meinapetito-portal-sdk-common:latest
+          imagePullPolicy: Always
+          env:
+            - name: PORTAL_SDK_COMMON_ENVIRONMENT
+              value: Production
+            - name: PORTAL_SDK_COMMON_MEINAPETITO_PORTAL_BASE_URL
+              value: https://mein.apetito.de/api
+            - name: PORTAL_SDK_COMMON_APP_INSIGHTS_CONNECTIONSTRING
+              value: InstrumentationKey=f64bdf16-fade-40a1-b2f3-fad62f2a3d7c;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/
+
+          resources:
+            limits:
+              memory: "16Mi"
+              cpu: "50m"
+            requests:
+              memory: "4Mi"
+              cpu: "5m"
+          ports:
+            - containerPort: 80

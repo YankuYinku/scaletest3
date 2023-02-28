@@ -1,0 +1,17 @@
+{
+  "target": "esnext",
+  "module": "esnext",
+  "extends": "ts-config-single-spa",
+  "files": ["src/apetito-portal-sdk-common.ts"],
+  "compilerOptions": {
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    "moduleResolution": "node",
+    "declarationDir": "./types",
+    "declarationMap": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": ["src/**/*.test*"]
+}

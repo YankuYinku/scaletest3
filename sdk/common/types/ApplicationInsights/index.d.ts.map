@@ -1,0 +1,1 @@
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../src/ApplicationInsights/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,mBAAmB,EAAE,MAAM,oCAAoC,CAAC;AAMzE,eAAO,MAAM,WAAW,qBAKtB,CAAC;AAIH,oBAAY,oBAAoB,GAAG;IACjC,WAAW,EAAE,MAAM,CAAC;IACpB,cAAc,EAAE,MAAM,CAAC;CACxB,CAAC;AAEF,wBAAgB,kBAAkB,CAAC,QAAQ,EAAE,oBAAoB,QAOhE;;;;;AAED,wBAGE"}

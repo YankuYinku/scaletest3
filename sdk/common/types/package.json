@@ -1,0 +1,17 @@
+{
+  "name": "@types/portal-sdk-common",
+  "version": "2.2.0",
+  "description": "types for portal-sdk-common",
+  "main": "",
+  "types": "./apetito-portal-sdk-common.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@microsoft/applicationinsights-web": "^2.8.3",
+    "@types/vue": "latest",
+    "windowed-observable": "latest"
+  }
+}
