@@ -1,0 +1,35 @@
+- op: remove
+  path: /metadata/annotations/cert-manager.io~1issuer
+
+- op: remove
+  path: /spec/tls
+
+- op: remove
+  path: /spec/rules/0/host
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1
+
+- op: remove
+  path: /spec/rules/1

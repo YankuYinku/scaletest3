@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-api
+
+spec:
+  replicas: 3
+
+  template:
+    spec:
+      containers:
+        - name: portal-api
+          image: apetitoebusinesssolutions.azurecr.io/meinapetito-portal-api:latest
+
+          env:
+            - name: Dependencies__APIs__meinApetitoApiBaseUrl
+              value: https://mein.apetito.de/api/
+            - name: Dependencies__APIs__cachedDownloadsBaseUrl
+              value: https://mein.apetito.de/cached/
+            - name: Dependencies__APIs__articleCacheApiBaseUrl
+              value: https://mein.apetito.de/cached-articles/
+            - name: Dependencies__APIs__cachedFaqsBaseUrl
+              value: https://mein.apetito.de/faqs-cached/
+            - name: Dependencies__APIs__newsCacheApiBaseUrl
+              value: https://mein.apetito.de/news-cached/
+            - name: Dependencies__APIs__BKTApiBaseUrl
+              value: https://shared-bkt.prod.apebs.de/

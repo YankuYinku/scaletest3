@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-api
+
+spec:
+  selector:
+    matchLabels:
+      app: portal-api
+
+  replicas: 3
+
+  template:
+    metadata:
+      labels:
+        app: portal-api
+
+    spec:
+      containers:
+        - name: portal-api
+          image: apetitoebusinesssolutions.azurecr.io/meinapetito-portal-api:latest
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: AZURE_TENANT_ID
+              value: 74921e6f-35b2-40fb-803d-53715777c223
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: appsetting-sserviceprincipal
+                  key: AZURE_CLIENT_ID
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: appsetting-sserviceprincipal
+                  key: AZURE_CLIENT_SECRET
+            - name: Dependencies__APIs__meinApetitoApiBaseUrl
+              value: https://mein.apetito.de/api/
+            - name: Dependencies__APIs__cachedDownloadsBaseUrl
+              value: https://mein.apetito.de/cached/
+            - name: Dependencies__APIs__articleCacheApiBaseUrl
+              value: https://mein.apetito.de/cached-articles/
+            - name: Dependencies__APIs__cachedFaqsBaseUrl
+              value: https://mein.apetito.de/faqs-cached/
+            - name: Dependencies__APIs__newsCacheApiBaseUrl
+              value: https://mein.apetito.de/news-cached/
+            - name: Dependencies__APIs__AuthorizationApiBaseUrl
+              value: http://authorization-api/
+            - name: Dependencies__APIs__OrdersApiBaseUrl
+              value: https://meinapetito-orders.azurewebsites.net/api/
+            - name: Dependencies__APIs__hawaOrdersBaseUrl
+              value: https://api.apetito.de/order/hawa/
+          ports:
+            - containerPort: 80

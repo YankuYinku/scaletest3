@@ -1,0 +1,152 @@
+resources:
+  repositories:
+    - repository: self
+      trigger:
+        batch: "true"
+        branches:
+          include:
+            - main
+        paths:
+          include:
+            - portal/root
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  - group: apetito.meinapetito
+  
+  - name: containerRegistry
+    value: "apetitoebusinesssolutions"
+  - name: containerRegistryUrl
+    value: "$(containerRegistry).azurecr.io"
+  - name: imageRepository
+    value: "meinapetito-portal-root"
+  - name: sourcesDirectory
+    value: "$(Build.SourcesDirectory)/portal/root"
+  - name: dockerfilePath
+    value: "$(sourcesDirectory)/Dockerfile"
+  - name: dockerBuildContext
+    value: "$(sourcesDirectory)"
+  - name: isMainBuild
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "true"
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "false"
+  - name: tag
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: $(Build.BuildId)
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "development"
+  - name: tags
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: |
+        $(Build.BuildId)
+        latest
+    ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: "development"
+
+stages:
+  - stage: Build
+    displayName: Build and push the docker image
+    jobs:
+      - job: BuildAndPublishDockerImage
+        displayName: Build and push docker image
+        condition: ne(variables['Build.Reason'], 'PullRequest')
+        steps:
+          - task: Docker@2
+            displayName: Build meinapetito-portal-root docker image
+            inputs:
+              containerRegistry: "$(containerRegistry)"
+              repository: "$(imageRepository)"
+              command: "build"
+              Dockerfile: "$(dockerfilePath)"
+              buildContext: "$(dockerBuildContext)"
+              tags: "$(tags)"
+              arguments: "--build-arg PAT=$(PAT)"
+              addPipelineData: false
+          - task: Docker@2
+            displayName: Push meinapetito-portal-root docker image to apetitoeBusinessSolutions ACR with build id
+            inputs:
+              command: "push"
+              containerRegistry: "$(containerRegistry)"
+              repository: "$(imageRepository)"
+              tags: "$(tags)"
+          - task: PublishPipelineArtifact@1
+            displayName: Publish the raw kubernetes manifests to the pipeline
+            inputs:
+              targetPath: "$(sourcesDirectory)/kubernetes"
+              artifact: "Manifests"
+              publishLocation: "pipeline"
+
+      - job: Build_Docker_Image_For_Pull_Request
+        displayName: Build Docker Image For Pull Request
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        steps:
+          - task: Docker@2
+            displayName: Build meinapetito-portal-root docker image
+            inputs:
+              containerRegistry: "$(containerRegistry)"
+              repository: "$(imageRepository)"
+              command: "build"
+              Dockerfile: "$(dockerfilePath)"
+              buildContext: "$(dockerBuildContext)"
+              tags: "$(tags)"
+              arguments: "--build-arg PAT=$(PAT)"
+              addPipelineData: false
+
+  - stage: Staging
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    displayName: Deploy the portal root to the staging cluster
+    jobs:
+      - deployment: DeployToStaging
+        environment: stage-meinapetito.default
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: KubernetesManifest@0
+                  name: bake
+                  inputs:
+                    action: "bake"
+                    renderType: "kustomize"
+                    kustomizationPath: "$(Pipeline.Workspace)/Manifests/overlays/staging/"
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy to Kubernetes Cluster
+                  inputs:
+                    action: "deploy"
+
+                    manifests: |
+                      $(bake.manifestsBundle)
+
+                    containers: |
+                      $(containerRegistryUrl)/$(imageRepository):$(tag)
+
+  - stage: Production
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    displayName: Deploy the portal root to the production cluster
+    jobs:
+      - deployment: DeployToProduction
+        environment: prod-meinapetito.default
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: KubernetesManifest@0
+                  name: bake
+                  inputs:
+                    action: "bake"
+                    renderType: "kustomize"
+                    kustomizationPath: "$(Pipeline.Workspace)/Manifests/overlays/prod/"
+
+                - task: KubernetesManifest@0
+                  displayName: Deploy to Kubernetes Cluster
+                  inputs:
+                    action: "deploy"
+
+                    manifests: |
+                      $(bake.manifestsBundle)
+
+                    containers: |
+                      $(containerRegistryUrl)/$(imageRepository):$(tag)

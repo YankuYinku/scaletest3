@@ -1,0 +1,12 @@
+{
+  "extends": "ts-config-single-spa",
+  "files": ["src/apetito-root-config.ts"],
+  "compilerOptions": {
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+  },
+  "types": [
+    "portal-sdk-common"
+  ],
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.test*"]
+}

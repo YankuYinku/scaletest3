@@ -1,0 +1,13 @@
+resources:
+  - ../../base
+
+patches:
+  - path: ingress.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: portal-api
+
+patchesStrategicMerge:
+  - deployment.yaml

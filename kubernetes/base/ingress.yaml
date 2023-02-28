@@ -1,0 +1,67 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portal-api
+  labels:
+    name: portal-api
+
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/issuer: "letsencrypt-prod-http-issuer"
+
+spec:
+  ingressClassName: nginx
+
+  tls:
+    - hosts:
+        - meinapetito.westeurope.cloudapp.azure.com
+        - preview.meinapetito.de
+        - preview.mijnapetito.nl
+        - preview.meinapetito.at
+        - zukunft.meinapetito.de
+        - zukunft.meinapetito.at
+        - toekomst.mijnapetito.nl
+        - mein.apetito.de
+        - mein.apetito.co.at
+        - mijn.apetito.nl
+      secretName: meinapetito-portal-ssl
+
+  rules:
+    - host: meinapetito.westeurope.cloudapp.azure.com
+      http: &http_rules
+        paths:
+          - pathType: Prefix
+            path: "/api(/|$)(.*)"
+            backend:
+              service:
+                name: portal-api
+                port:
+                  number: 80
+
+    - host: preview.meinapetito.de
+      http: *http_rules
+
+    - host: preview.mijnapetito.nl
+      http: *http_rules
+
+    - host: preview.meinapetito.at
+      http: *http_rules
+
+    - host: zukunft.meinapetito.de
+      http: *http_rules
+    
+    - host: zukunft.meinapetito.at
+      http: *http_rules
+
+    - host: toekomst.mijnapetito.nl
+      http: *http_rules
+
+    - host: mein.apetito.de
+      http: *http_rules
+
+    - host: mein.apetito.co.at
+      http: *http_rules
+
+    - host: mijn.apetito.nl
+      http: *http_rules

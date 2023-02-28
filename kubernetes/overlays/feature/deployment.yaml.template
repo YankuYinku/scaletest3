@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-api
+
+spec:
+  replicas: 1
+
+  template:
+    spec:
+      containers:
+        - name: portal-api
+          image: apetitoebusinesssolutions.azurecr.io/meinapetito-portal-api:<Tag>
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: Dependencies__APIs__meinApetitoApiBaseUrl
+              value: https://meinapetito-<Version>.dev.apebs.de/api/
+            - name: Dependencies__APIs__cachedDownloadsBaseUrl
+              value: https://meinapetito-<Version>.dev.apebs.de/cached/
+            - name: Dependencies__APIs__articleCacheApiBaseUrl
+              value: https://meinapetito-<Version>.dev.apebs.de/cached-articles/
+            - name: Dependencies__APIs__cachedFaqsBaseUrl
+              value: https://meinapetito-<Version>.dev.apebs.de/faqs-cached/
+            - name: Dependencies__APIs__newsCacheApiBaseUrl
+              value: https://meinapetito-<Version>.dev.apebs.de/news-cached/
+            - name: Dependencies__APIs__AuthorizationApiBaseUrl
+              value: http://authorization-api/
+            - name: Dependencies__APIs__OrdersApiBaseUrl
+              value: https://dev-meinapetito-orders.azurewebsites.net/api/
+            - name: Dependencies__APIs__BKTApiBaseUrl
+              value: https://shared-bkt.dev.apebs.de/
+
+
