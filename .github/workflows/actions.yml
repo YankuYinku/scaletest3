@@ -1,0 +1,33 @@
+name: Test
+on:
+  repository_dispatch:
+    types : [run-test]
+  pull_request:
+    types: [opened]
+  workflow_dispatch :
+  push :
+    branches:    
+      - 'main'
+env :
+  API_URL : "https://scale.api.zscwp.net"
+  AUTH_URL : "https://scale-auth.zscwp.net"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses : ZscalerCWP/Zscaler-IaC-Action@main
+        id : iac-scan
+        with:
+          client_id : ${{ secrets.ZSCANNER_CLIENT_ID }}
+          client_secret : ${{ secrets.ZSCANNER_CLIENT_SECRET }}
+          fail_build : 'true'
+          output_format : 'human'
+          log_level : 'debug'
+          region : 'CUSTOM'
+      - run : echo ${{ steps.iac-scan.outputs.sarif_file_path }}
+      - name: Upload SARIF file
+        if: ${{ steps.zscaler-iac-scan.outputs.sarif_file_path != '' }}
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ${{ steps.zscaler-iac-scan.outputs.sarif_file_path }}
